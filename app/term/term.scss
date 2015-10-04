@@ -1,0 +1,49 @@
+@import "compass/css3";
+
+.session span.win-id {
+  color: #666;
+}
+
+.session {
+  margin: auto;
+}
+
+.session ul {
+}
+
+.window {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.pane_container {
+  position: absolute;
+}
+
+.pane_container.active {
+  @include box-shadow(rgba(255, 255, 255, 0.40) 0 0px 7px);
+}
+
+.pane {
+}
+
+.terminal_font {
+  display: inline-block;
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.terminal {
+  @extend .terminal_font;
+
+  @include border-radius(3px);
+  padding: 4px 1px;
+
+  @include box-shadow(0 1px rgba(255, 255, 255, 0.1));
+}
+
+.reverse-video {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
