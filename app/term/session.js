@@ -8,8 +8,10 @@ import Window from "./window"
 
 const TMATE_WS_DAEMON_OUT_MSG = 0
 const TMATE_WS_SNAPSHOT = 1
+
 const TMATE_WS_PANE_KEYS = 0
 const TMATE_WS_EXEC_CMD = 1
+const TMATE_WS_RESIZE = 2
 
 const TMATE_OUT_HEADER =          0
 const TMATE_OUT_SYNC_LAYOUT =     1
@@ -55,6 +57,7 @@ export default class Session extends React.Component {
 
   componentWillMount() {
     this.char_size = this.compute_char_size()
+    this.terminal_padding_size = this.compute_terminal_padding()
   }
 
   componentDidMount() {
@@ -70,15 +73,27 @@ export default class Session extends React.Component {
     this.daemon_handlers.set(TMATE_OUT_STATUS,      this.on_status)
 
     this.pane_events = new Map()
+
+    window.addEventListener('resize', this.handleResize.bind(this))
   }
 
   componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize.bind(this));
     this.disconnect()
   }
 
   compute_char_size() {
     let c = $("<div style='position: absolute, visibility: hidden" +
                           "height: auto, width: auto' class='terminal_font'>X</div>")
+    c.appendTo($('body'))
+    let size = c[0].getBoundingClientRect()
+    c.remove()
+    return size
+  }
+
+  compute_terminal_padding() {
+    let c = $("<div class='terminal' style='position: absolute, visibility: hidden" +
+                                            "height: auto, width: auto' />")
     c.appendTo($('body'))
     let size = c[0].getBoundingClientRect()
     c.remove()
@@ -121,6 +136,7 @@ export default class Session extends React.Component {
       this.on_socket_msg(this.deserialize_msg(event.data))
     }
     this.ws.onopen = event => {
+      this.handleResize()
       this.setState({ws_state: WS_BOOTSTRAPPING})
     }
     this.ws.onclose = event => {
@@ -218,8 +234,30 @@ export default class Session extends React.Component {
     const session_style = {width: this.get_row_width(this.state.size[0])}
     return <div className="session" style={session_style}>
             {win_nav}
+            <div ref="top_win" />
             {wins}
            </div>
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    this.handleResize()
+  }
+
+  handleResize(_event) {
+    if (this.state.ws_state != WS_OPEN)
+      return
+
+    let max_width = window.innerWidth
+    let max_height = window.innerHeight
+
+    if (this.refs.top_win)
+      max_height -= React.findDOMNode(this.refs.top_win).getBoundingClientRect().top
+
+    max_width -= this.terminal_padding_size.width
+    max_height -= this.terminal_padding_size.height
+
+    this.notify_client_size(Math.floor(max_width / this.char_size.width),
+                            Math.floor(max_height / this.char_size.height))
   }
 
   render() {
@@ -240,6 +278,14 @@ export default class Session extends React.Component {
     this.send_msg([TMATE_WS_PANE_KEYS, pane_id, data])
   }
 
+  notify_client_size(x, y) {
+    if (this.last_x !== x || this.last_y !== y) {
+      this.send_msg([TMATE_WS_RESIZE, [x,y]])
+      this.last_x = x
+      this.last_y = y
+    }
+  }
+
   focus_window(win_id) {
     this.send_msg([TMATE_WS_EXEC_CMD, `select-window -t ${win_id}`])
   }
@@ -249,7 +295,8 @@ export default class Session extends React.Component {
   }
 
   send_msg(msg) {
-    this.ws.send(this.serialize_msg(msg));
+    if (this.state.ws_state == WS_OPEN)
+      this.ws.send(this.serialize_msg(msg));
   }
 
   on_status(msg) {

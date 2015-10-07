@@ -8,7 +8,7 @@ export default class Layout extends React.Component {
   render() {
     return (
       <div>
-        <div className="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div className="navbar navbar-default" role="navigation">
           <div className="container">
             <div className="navbar-header">
               <button type="button" className="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -26,9 +26,7 @@ export default class Layout extends React.Component {
           </div>
         </div>
 
-        <div className="container">
-          {this.props.children}
-        </div>
+        {this.props.children}
       </div>
     )
   }

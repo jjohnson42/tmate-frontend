@@ -1,4 +1,5 @@
 import React from "react"
+import $ from "jquery"
 import Pane from "./pane"
 
 export default class Window extends React.Component {
@@ -20,8 +21,10 @@ export default class Window extends React.Component {
              </div>
     })
 
-    const style = {width: this.props.session.get_row_width(win_size[0]),
-                   height: this.props.session.get_col_height(win_size[1])}
+    const style = {width: this.props.session.get_row_width(win_size[0]) +
+                          this.props.session.terminal_padding_size.width,
+                   height: this.props.session.get_col_height(win_size[1]) +
+                           this.props.session.terminal_padding_size.height}
     return <div className="window" style={style}>{panes}</div>
   }
 }
