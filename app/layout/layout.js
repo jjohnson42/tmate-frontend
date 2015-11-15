@@ -3,6 +3,7 @@ require('./layout.scss')
 
 import React from 'react'
 import { Link } from 'react-router'
+import NavLink from './navlink.js'
 
 export default class Layout extends React.Component {
   render() {
@@ -20,7 +21,8 @@ export default class Layout extends React.Component {
               <Link className="navbar-brand" to="/">tmate</Link>
             </div>
             <div className="collapse navbar-collapse">
-              <ul className="nav navbar-nav pull-right">
+              <ul className="nav navbar-nav">
+                <NavLink to="/dashboard">Dashboard</NavLink>
               </ul>
             </div>
           </div>

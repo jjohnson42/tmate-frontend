@@ -6,6 +6,7 @@ import { createHistory } from 'history'
 
 import Session from './term/session'
 import Layout from './layout/layout'
+import Dashboard from './dashboard/dashboard'
 
 class Root extends React.Component {
   render() {
@@ -18,6 +19,7 @@ React.render((
     <Route path='/' component={Layout}>
       <IndexRoute component={Root} />
       <Route path='t/:session_token' component={Session} />
+      <Route path='dashboard' component={Dashboard} />
     </Route>
   </Router>
 ), document.body)
