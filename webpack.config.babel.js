@@ -11,7 +11,7 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'react-hot!babel?compact=false&stage=0'},
+      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'react-hot!babel?compact=false&cacheDirectory'},
       { test: /\.css$/, loader: "style!css"},
       { test: /\.scss$/, loader: "style!css!sass?includePaths[]=node_modules/compass-mixins/lib"},
       { test: /\.less/, loader: "style!css!less"},
