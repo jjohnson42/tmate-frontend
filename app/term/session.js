@@ -55,6 +55,10 @@ class EventBuffer {
 export default class Session extends React.Component {
   state = { ws_state: WS_CONNECTING }
 
+  constructor() {
+    super()
+  }
+
   componentWillMount() {
     this.char_size = this.compute_char_size()
     this.terminal_padding_size = this.compute_terminal_padding()

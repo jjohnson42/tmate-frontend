@@ -4,6 +4,30 @@ require('./layout.scss')
 import React from 'react'
 import { Link } from 'react-router'
 import NavLink from './navlink.js'
+import SignInButton from '../signin/signin.js'
+
+class NavAnonymous extends React.Component {
+  render() {
+    return <div className="collapse navbar-collapse">
+             <ul className="nav navbar-nav navbar-right">
+               <li><SignInButton /></li>
+             </ul>
+           </div>
+  }
+}
+
+class NavUser extends React.Component {
+  render() {
+    return <div className="collapse navbar-collapse">
+             <ul className="nav navbar-nav">
+               <NavLink to="/dashboard">Dashboard</NavLink>
+             </ul>
+             <ul className="nav navbar-nav navbar-right">
+               <NavLink to="/settings">Settings</NavLink>
+             </ul>
+           </div>
+  }
+}
 
 export default class Layout extends React.Component {
   render() {
@@ -12,19 +36,9 @@ export default class Layout extends React.Component {
         <div className="navbar navbar-default" role="navigation">
           <div className="container">
             <div className="navbar-header">
-              <button type="button" className="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span className="sr-only">Toggle navigation</span>
-                <span className="icon-bar"></span>
-                <span className="icon-bar"></span>
-                <span className="icon-bar"></span>
-              </button>
               <Link className="navbar-brand" to="/">tmate</Link>
             </div>
-            <div className="collapse navbar-collapse">
-              <ul className="nav navbar-nav">
-                <NavLink to="/dashboard">Dashboard</NavLink>
-              </ul>
-            </div>
+            <NavAnonymous />
           </div>
         </div>
 
