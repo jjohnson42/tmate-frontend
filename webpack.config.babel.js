@@ -1,11 +1,14 @@
 import fs from 'fs'
 import webpack from 'webpack'
 
+const prod = process.env.NODE_ENV == "production"
+
 module.exports = {
   entry: {
     index: ["./app/index.js"]
   },
   output: {
+    path: "./dist",
     filename: 'js/[name].js',
     publicPath: 'http://localhost:4080/',
   },
@@ -15,10 +18,10 @@ module.exports = {
       { test: /\.css$/, loader: "style!css"},
       { test: /\.scss$/, loader: "style!css!sass?includePaths[]=node_modules/compass-mixins/lib"},
       { test: /\.less/, loader: "style!css!less"},
-      { test: /\.(svg|eot|ttf|woff2?|jpg|png)$/, loader: "url?limit=8000&name=images/[name].[hash].[ext]" },
+      { test: /\.(svg|eot|ttf|woff2?|jpg|png)$/, loader: "url?limit=8000&name=img/[name].[hash].[ext]" },
     ]
   },
-  devtool: "eval-source-map",
+  devtool: prod ? "source-map" : "eval-source-map",
 }
 
 // Monkey patch the bootstrap theme
