@@ -1,6 +1,7 @@
 require('./register_user.scss')
 
 import React from 'react'
+import $ from "jquery"
 
 export default class RegisterUser extends React.Component {
   signUp(event) {

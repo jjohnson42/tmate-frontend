@@ -145,10 +145,10 @@ export default class Session extends React.Component {
       this.setState({ws_state: WS_BOOTSTRAPPING})
     }
     this.ws.onclose = event => {
-      this.setState({ws_state: WS_CLOSED, ws_close_code: event.code})
+      this.setState({ws_state: WS_CLOSED, ws_close_event: event})
     }
     this.ws.onerror = event => {
-      this.setState({ws_state: WS_CLOSED, ws_close_code: -1})
+      this.setState({ws_state: WS_CLOSED})
     }
   }
 
@@ -203,11 +203,13 @@ export default class Session extends React.Component {
   }
 
   render_ws_closed() {
-    const close_reason = WS_ERRORS[this.state.ws_close_code] ||
-                           `Not connected: ${event.code} ${event.reason}`
+    const event = this.state.ws_close_event
+    const close_reason = event ? WS_ERRORS[this.state.ws_close_event.code] ||
+                                 `Not connected: ${event.code} ${event.reason}` :
+                                 "Not connected"
 
     return <div className="session">
-             <h3>{close_reason}.</h3>
+             <h3>{close_reason}</h3>
            </div>
   }
 
@@ -306,7 +308,7 @@ export default class Session extends React.Component {
 
   on_status(msg) {
     // TODO
-    console.log(`Got status: ${msg}`)
+    // console.log(`Got status: ${msg}`)
   }
 
   serialize_msg(msg) {

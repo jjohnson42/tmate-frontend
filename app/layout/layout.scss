@@ -1,2 +1,6 @@
 .navbar-padding {
 }
+
+::-webkit-selection { color: black; background: rgba(178, 104, 24, 0.99); }
+   ::-moz-selection { color: black; background: rgba(178, 104, 24, 0.99); }
+        ::selection { color: black; background: rgba(178, 104, 24, 0.99); }

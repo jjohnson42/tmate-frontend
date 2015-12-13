@@ -5,6 +5,7 @@ import React from 'react'
 import { Link } from 'react-router'
 import NavLink from './navlink.js'
 import SignInButton from '../signin/signin.js'
+import Helmet from 'react-helmet'
 
 class NavAnonymous extends React.Component {
   render() {
@@ -29,19 +30,24 @@ class NavUser extends React.Component {
   }
 }
 
+class NavBar extends React.Component {
+  render() {
+    return <div className="navbar navbar-default" role="navigation">
+             <div className="container">
+               <div className="navbar-header">
+                 <Link className="navbar-brand" to="/">tmate</Link>
+               </div>
+               <NavAnonymous />
+             </div>
+           </div>
+  }
+}
+
 export default class Layout extends React.Component {
   render() {
     return (
       <div>
-        <div className="navbar navbar-default" role="navigation">
-          <div className="container">
-            <div className="navbar-header">
-              <Link className="navbar-brand" to="/">tmate</Link>
-            </div>
-            <NavAnonymous />
-          </div>
-        </div>
-
+        <Helmet title="tmate" />
         {this.props.children}
       </div>
     )
