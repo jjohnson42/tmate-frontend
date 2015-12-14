@@ -35,9 +35,10 @@ class NavBar extends React.Component {
     return <div className="navbar navbar-default" role="navigation">
              <div className="container">
                <div className="navbar-header">
-                 <Link className="navbar-brand" to="/">tmate</Link>
+               {/* <Link className="navbar-brand" to="/">tmate</Link> */}
+               <a className="navbar-brand" href="/">tmate</a>
                </div>
-               <NavAnonymous />
+               {/* <NavAnonymous /> */}
              </div>
            </div>
   }
@@ -48,6 +49,7 @@ export default class Layout extends React.Component {
     return (
       <div>
         <Helmet title="tmate" />
+        <NavBar />
         {this.props.children}
       </div>
     )

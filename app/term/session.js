@@ -130,31 +130,41 @@ export default class Session extends React.Component {
     this.pane_events.delete(pane_id)
   }
 
-  ws_url() {
-    return `ws://${window.location.hostname}:4001/ws/session/${this.props.params.session_token}`
-  }
-
   connect() {
-    this.ws = new WebSocket(this.ws_url())
-    this.ws.binaryType = "arraybuffer"
-    this.ws.onmessage = event => {
-      this.on_socket_msg(this.deserialize_msg(event.data))
-    }
-    this.ws.onopen = event => {
-      this.handleResize()
-      this.setState({ws_state: WS_BOOTSTRAPPING})
-    }
-    this.ws.onclose = event => {
-      this.setState({ws_state: WS_CLOSED, ws_close_event: event})
-    }
-    this.ws.onerror = event => {
+    const token = this.props.params.session_token
+    $.get(`/api/t/${token}`)
+    .fail(() => {
       this.setState({ws_state: WS_CLOSED})
-    }
+    })
+    .done(session => {
+      if (session.closed_at) {
+        this.setState({ws_state: WS_CLOSED, close_reason: "Session closed"})
+      } else if (this.state.ws_state != WS_CLOSED) {
+        this.ws = new WebSocket(`${session.ws_base_url}/${token}`)
+        this.ws.binaryType = "arraybuffer"
+        this.ws.onmessage = event => {
+          this.on_socket_msg(this.deserialize_msg(event.data))
+        }
+        this.ws.onopen = event => {
+          this.handleResize()
+          this.setState({ws_state: WS_BOOTSTRAPPING})
+        }
+        this.ws.onclose = event => {
+          this.setState({ws_state: WS_CLOSED, ws_close_event: event})
+        }
+        this.ws.onerror = event => {
+          this.setState({ws_state: WS_CLOSED})
+        }
+      }
+    })
   }
 
   disconnect() {
-    this.ws.onclose = undefined
-    this.ws.close()
+    this.setState({ws_state: WS_CLOSED})
+    if (this.ws) {
+      this.ws.close()
+      this.ws = undefined
+    }
   }
 
   on_socket_msg(msg) {
@@ -190,27 +200,27 @@ export default class Session extends React.Component {
     this.emit_pane_event(pane_id, "on_pty_data", data)
   }
 
-  render_ws_connecting() {
-    return <div className="session">
-             <h3>Connecting...</h3>
+  render_message(msg) {
+    return <div className="session-status">
+             <h3>{msg}</h3>
            </div>
   }
 
+  render_ws_connecting() {
+    return this.render_message("Connecting...")
+  }
+
   render_ws_bootstrapping() {
-    return <div className="session">
-             <h3>Initializing session...</h3>
-           </div>
+    return this.render_message("Initializing session...")
   }
 
   render_ws_closed() {
     const event = this.state.ws_close_event
-    const close_reason = event ? WS_ERRORS[this.state.ws_close_event.code] ||
+    const close_reason = this.state.close_reason ||
+                         (event ? WS_ERRORS[this.state.ws_close_event.code] ||
                                  `Not connected: ${event.code} ${event.reason}` :
-                                 "Not connected"
-
-    return <div className="session">
-             <h3>{close_reason}</h3>
-           </div>
+                                 "Not connected")
+    return this.render_message(close_reason)
   }
 
   render_ws_open() {
