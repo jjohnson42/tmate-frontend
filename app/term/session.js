@@ -133,8 +133,8 @@ export default class Session extends React.Component {
   connect() {
     const token = this.props.params.session_token
     $.get(`/api/t/${token}`)
-    .fail(() => {
-      this.setState({ws_state: WS_CLOSED})
+    .fail((jqXHR, textStatus, error) => {
+      this.setState({ws_state: WS_CLOSED, close_reason: `Error: ${error}`})
     })
     .done(session => {
       if (session.closed_at) {

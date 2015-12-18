@@ -10,7 +10,7 @@ module.exports = {
   output: {
     path: "./dist",
     filename: 'js/[name].js',
-    publicPath: 'http://localhost:4080/',
+    publicPath: prod ? '/' : 'http://localhost:4080/',
   },
   module: {
     loaders: [
