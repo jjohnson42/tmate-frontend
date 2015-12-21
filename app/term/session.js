@@ -140,6 +140,7 @@ export default class Session extends React.Component {
       if (session.closed_at) {
         this.setState({ws_state: WS_CLOSED, close_reason: "Session closed"})
       } else if (this.state.ws_state != WS_CLOSED) {
+        this.setState({ws_base_url: session.ws_base_url})
         this.ws = new WebSocket(`${session.ws_base_url}/${token}`)
         this.ws.binaryType = "arraybuffer"
         this.ws.onmessage = event => {
@@ -249,11 +250,34 @@ export default class Session extends React.Component {
     })
 
     const session_style = {width: this.get_row_width(this.state.size[0])}
-    return <div className="session" style={session_style}>
-            {win_nav}
-            <div ref="top_win" />
-            {wins}
+    const session_div = <div className="session" style={session_style}>
+                         {win_nav}
+                         <div ref="top_win" />
+                         {wins}
+                        </div>
+
+    return <div>
+            {session_div}
+            {this.render_ssh_connection_string()}
+            <p className="faq">
+              The HTML5 client is a work in progress. tmux key bindings don't work. There are known graphical bugs.
+            </p>
            </div>
+  }
+
+  render_ssh_connection_string() {
+    // very hackish, but temporary :)
+    if (!this.state.ws_base_url)
+      return <span />
+
+    const stoken = this.props.params.session_token
+    const [host, port] = this.state.ws_base_url.split("/")[2].split(":")
+    const port_str = port ? `-p${port} ` : ""
+    const ssh_string = `ssh ${port_str}${stoken}@${host}`
+
+    return <p className="ssh-cstr">
+             {ssh_string}
+           </p>
   }
 
   componentDidUpdate(prevProps, prevState) {
