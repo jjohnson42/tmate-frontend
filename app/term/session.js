@@ -272,8 +272,8 @@ export default class Session extends React.Component {
 
     const stoken = this.props.params.session_token
     const [host, port] = this.state.ws_base_url.split("/")[2].split(":")
-    const port_str = port ? `-p${port} ` : ""
-    const ssh_string = `ssh ${port_str}${stoken}@${host}`
+    // no ssh port, sorry dev mode.
+    const ssh_string = `ssh ${stoken}@${host}`
 
     return <p className="ssh-cstr">
              {ssh_string}
