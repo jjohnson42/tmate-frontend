@@ -140,8 +140,9 @@ export default class Session extends React.Component {
       if (session.closed_at) {
         this.setState({ws_state: WS_CLOSED, close_reason: "Session closed"})
       } else if (this.state.ws_state != WS_CLOSED) {
-        this.setState({ws_base_url: session.ws_base_url})
-        this.ws = new WebSocket(`${session.ws_base_url}/${token}`)
+        this.setState({ws_url_fmt: session.ws_url_fmt, ssh_cmd_fmt: session.ssh_cmd_fmt})
+        const ws_url = session.ws_url_fmt.replace("%s", this.props.params.session_token);
+        this.ws = new WebSocket(ws_url)
         this.ws.binaryType = "arraybuffer"
         this.ws.onmessage = event => {
           this.on_socket_msg(this.deserialize_msg(event.data))
@@ -266,17 +267,13 @@ export default class Session extends React.Component {
   }
 
   render_ssh_connection_string() {
-    // very hackish, but temporary :)
-    if (!this.state.ws_base_url)
+    if (!this.state.ssh_cmd_fmt)
       return <span />
 
-    const stoken = this.props.params.session_token
-    const [host, port] = this.state.ws_base_url.split("/")[2].split(":")
-    // no ssh port, sorry dev mode.
-    const ssh_string = `ssh ${stoken}@${host}`
+    const ssh_cmd = this.state.ssh_cmd_fmt.replace("%s", this.props.params.session_token);
 
     return <p className="ssh-cstr">
-             {ssh_string}
+             {ssh_cmd}
            </p>
   }
 
