@@ -13,19 +13,25 @@ const TMATE_WS_PANE_KEYS = 0
 const TMATE_WS_EXEC_CMD = 1
 const TMATE_WS_RESIZE = 2
 
-const TMATE_OUT_HEADER =          0
-const TMATE_OUT_SYNC_LAYOUT =     1
-const TMATE_OUT_PTY_DATA =        2
-const TMATE_OUT_EXEC_CMD =        3
-const TMATE_OUT_FAILED_CMD =      4
-const TMATE_OUT_STATUS =          5
-const TMATE_OUT_SYNC_COPY_MODE =  6
+const TMATE_OUT_HEADER          = 0
+const TMATE_OUT_SYNC_LAYOUT     = 1
+const TMATE_OUT_PTY_DATA        = 2
+const TMATE_OUT_EXEC_CMD_STR    = 3
+const TMATE_OUT_FAILED_CMD      = 4
+const TMATE_OUT_STATUS          = 5
+const TMATE_OUT_SYNC_COPY_MODE  = 6
 const TMATE_OUT_WRITE_COPY_MODE = 7
+const TMATE_OUT_FIN             = 8
+const TMATE_OUT_READY           = 9
+const TMATE_OUT_RECONNECT       = 10
+const TMATE_OUT_SNAPSHOT        = 11
+const TMATE_OUT_EXEC_CMD        = 12
 
 const WS_CONNECTING    = 0
 const WS_BOOTSTRAPPING = 1
 const WS_OPEN          = 2
 const WS_CLOSED        = 3
+const WS_RECONNECT     = 4
 
 const WS_ERRORS = {
   1005: "Session closed",
@@ -75,6 +81,7 @@ export default class Session extends React.Component {
     this.daemon_handlers.set(TMATE_OUT_SYNC_LAYOUT, this.on_sync_layout)
     this.daemon_handlers.set(TMATE_OUT_PTY_DATA,    this.on_pty_data)
     this.daemon_handlers.set(TMATE_OUT_STATUS,      this.on_status)
+    this.daemon_handlers.set(TMATE_OUT_FIN,         this.on_fin)
 
     this.pane_events = new Map()
 
@@ -131,9 +138,12 @@ export default class Session extends React.Component {
   }
 
   connect() {
+    this.setState({ws_state: WS_CONNECTING})
+
     const token = this.props.params.session_token
     $.get(`/api/t/${token}`)
     .fail((jqXHR, textStatus, error) => {
+      // TODO retry when needed here as well.
       this.setState({ws_state: WS_CLOSED, close_reason: `Error: ${error}`})
     })
     .done(session => {
@@ -152,13 +162,21 @@ export default class Session extends React.Component {
           this.setState({ws_state: WS_BOOTSTRAPPING})
         }
         this.ws.onclose = event => {
-          this.setState({ws_state: WS_CLOSED, ws_close_event: event})
+          this.reconnect()
         }
         this.ws.onerror = event => {
-          this.setState({ws_state: WS_CLOSED})
+          this.reconnect()
         }
       }
     })
+  }
+
+  reconnect() {
+    if (this.state.ws_state == WS_RECONNECT || this.state.ws_state == WS_CLOSED)
+      return;
+
+    setTimeout(this.connect.bind(this), 1000);
+    this.setState({ws_state: WS_RECONNECT})
   }
 
   disconnect() {
@@ -223,6 +241,10 @@ export default class Session extends React.Component {
                                  `Not connected: ${event.code} ${event.reason}` :
                                  "Not connected")
     return this.render_message(close_reason)
+  }
+
+  render_ws_reconnect() {
+    return this.render_message("Reconnecting...")
   }
 
   render_ws_open() {
@@ -304,6 +326,7 @@ export default class Session extends React.Component {
       case WS_BOOTSTRAPPING: return this.render_ws_bootstrapping()
       case WS_OPEN:          return this.render_ws_open()
       case WS_CLOSED:        return this.render_ws_closed()
+      case WS_RECONNECT:     return this.render_ws_reconnect()
     }
   }
 
@@ -340,6 +363,10 @@ export default class Session extends React.Component {
   on_status(msg) {
     // TODO
     // console.log(`Got status: ${msg}`)
+  }
+
+  on_fin() {
+    this.setState({ws_state: WS_CLOSED, close_reason: "Session closed"})
   }
 
   serialize_msg(msg) {
